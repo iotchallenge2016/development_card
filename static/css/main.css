@@ -20,6 +20,10 @@
 	background-size: cover;
 }
 
+.bold-text {
+	font-weight: bold !important;
+}
+
 .custom-footer {
 	margin-top: 0em !important;
 }
