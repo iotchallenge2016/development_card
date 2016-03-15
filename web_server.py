@@ -40,7 +40,7 @@ def api_section_free(sectionId, quantity, methods = ['GET']):
 	if request.method == 'GET':
 		quantity = int(quantity)
 		data = mongo.db.parking.find({'section': sectionId})[0]
-		mongo.db.parking.update_one({'section' : sectionId}, {'$set' : {'spaces' : int(data['spaces'] + quantity)}})
+		mongo.db.parking.update_one({'section' : sectionId}, {'$set' : {'capacity' : int(data['capacity'] + quantity)}})
 		return Response(dumps(mongo.db.parking.find({'section': sectionId})[0]), mimetype='application/json')
 	else:
 		raise InvalidUsage('Unsupported Method', 501)
@@ -50,16 +50,16 @@ def api_section_reserve(sectionId, quantity, methods = ['GET']):
 	if request.method == 'GET':
 		quantity = int(quantity)
 		data = mongo.db.parking.find({'section': sectionId})[0]
-		if (data['spaces'] > 0):
-			mongo.db.parking.update_one({'section' : sectionId}, {'$set' : {'spaces' : int(data['spaces'] - quantity)}})
+		if (data['capacity'] > 0):
+			mongo.db.parking.update_one({'section' : sectionId}, {'$set' : {'capacity' : int(data['capacity'] - quantity)}})
 		return Response(dumps(mongo.db.parking.find({'section': sectionId})[0]), mimetype='application/json')
 	else:
 		raise InvalidUsage('Unsupported Method', 501)
 
-@app.route('/sections/add/<sectionId>/<spaces>')
-def api_add_section(sectionId, spaces, methods = ['GET']):
+@app.route('/sections/add/<sectionId>/<capacity>')
+def api_add_section(sectionId, capacity, methods = ['GET']):
 	if request.method == 'GET':
-		mongo.db.parking.insert_one({'section': sectionId, 'spaces': int(spaces)})
+		mongo.db.parking.insert_one({'section': sectionId, 'capacity': int(capacity)})
 		return Response(dumps({}), status=200, mimetype='application/json')
 	else:
 		raise InvalidUsage('Unsupported Method', 501)
