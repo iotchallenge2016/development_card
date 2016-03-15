@@ -1,9 +1,9 @@
-from flask import Flask, url_for, request, jsonify, Response
+from flask import Flask, url_for, request, jsonify, Response, render_template
 from bson.json_util import dumps
 from invalid_request import InvalidRequest
 from flask.ext.pymongo import PyMongo
 import json
-app = Flask('parking-lot')
+app = Flask('parking-lot', static_url_path='/static')
 mongo = PyMongo(app)
 
 @app.errorhandler(InvalidRequest)
@@ -14,7 +14,11 @@ def handle_invalid_usage(error):
 
 @app.route('/')
 def root():
-	return Response(json.dumps({'Provider' : 'FailSquad'}), mimetype='application/json')
+	return render_template('index.html')
+
+@app.route('/about')
+def about():
+	return render_template('about.html')
 
 @app.route('/sections', methods = ['GET'])
 def api_sections():
