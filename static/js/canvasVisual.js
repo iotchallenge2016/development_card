@@ -6,9 +6,9 @@ var zones = [];
 
 
 var zonesInfo = [ 
-  {left: 295.5063716159557, top: 131.72390292367152, scaleX: 1.536838842526588, scaleY: 1.6857065087475913, angle: 3.8890539330117546 },
-  {left: 278.8729430261647, top: 331.59313829697, scaleX: 1.4250574039124928, scaleY: 1.5081040961782741, angle: 4.8796811563988145 },
-  {left: 265.0155181282574, top: 501.2838252759253, scaleX :1.2600444979839147, scaleY:0.9546760388661403, angle:4.434359226879513}
+  {left: 295.5063716159557, top: 131.72390292367152, scaleX: 1.536838842526588, scaleY: 1.6857065087475913, angle: 3.8890539330117546, lugares: 30, max: 40},
+  {left: 278.8729430261647, top: 331.59313829697, scaleX: 1.4250574039124928, scaleY: 1.5081040961782741, angle: 4.8796811563988145, lugares: 15, max: 40},
+  {left: 265.0155181282574, top: 501.2838252759253, scaleX :1.2600444979839147, scaleY:0.9546760388661403, angle:4.434359226879513, lugares: 10, max: 40}
   ];
 
 canvas.setBackgroundImage('/static/img/estacionamiento.jpg', canvas.renderAll.bind(canvas), {
@@ -21,11 +21,27 @@ function readZones(){
   var i;
   console.log(zonesInfo.length);
   for(i = 0; i < zonesInfo.length; i++){
+    var lugares = zonesInfo[i]["lugares"];
+    var max = zonesInfo[i]["max"];
+    var red = 255;
+    var green = 255;
+
+    if(lugares > max/2){
+      red = Math.floor(2*255*(max-lugares)/max);
+    } else{
+      green = Math.floor(2*255*lugares/max);
+    }
+
+    var colorString = 'rgb(' + red.toString() + ',' + green.toString() + ',0)';
+    console.log(colorString);
+
     var rectangle = new fabric.Rect({ 
     width: WIDTH, 
     height: HEIGHT, 
-    fill: '#77f', 
+    fill: colorString, 
     opacity: 0.5,
+
+
 
   });
 
