@@ -1,4 +1,4 @@
-def loadCSV(csvURL,target):
+def parse_csv(csvURL):
     # The row number in the .csv file
     avlb = 2
     zone = 0
@@ -6,7 +6,7 @@ def loadCSV(csvURL,target):
     values = [] # Array that holds the availabity of the spaces in each zone
     total = 0 # Holds the total number of occupied spaces in a zone
     diff = 1 # Variable used to know when the zone changes while reading the .csv
-
+    json = "["
     # Reads each line the .csv and stores the value of the occupied spaces
     with open(csvURL, 'r') as csv:
         for line in csv.readlines():
@@ -15,10 +15,7 @@ def loadCSV(csvURL,target):
             if diff != int(elements[zone]):
                 ocpd = sum(values)
                 free = total - ocpd
-                print("Occupied spaces on zone %d: %d" % (diff, ocpd))
-                print("Free spaces on zone %d: %d" % (diff, free))
-                toJSON(diff,free,target)
-                print()
+                json = json + toJSON(diff,free)
                 values = []
                 total = 0
                 diff = int(elements[zone])
@@ -28,16 +25,10 @@ def loadCSV(csvURL,target):
     # Calculates the occupied and free spaces in the last zone
     ocpd = sum(values)
     free = total - ocpd
-    print("Occupied spaces on zone %d: %d" % (diff, ocpd))
-    print("Free spaces on zone %d: %d" % (diff, free))
-    toJSONfinal(diff,free,target)
+    return json + toJSONfinal(diff,free) + "]"
 
-def toJSON(zone,available,target):
-    target.write("{\"zone\":"+str(zone)+", \"availabe\":"+str(available)+"},\n")
-def toJSONfinal(zone,available,target):
-    target.write("{\"zone\":"+str(zone)+", \"availabe\":"+str(available)+"}\n")
+def toJSON(zone,available):
+    return "{\"section\":\""+str(zone)+"\", \"capacity\":"+str(available)+"},"
 
-current = open('current.json','w')
-current.write("{\"parking\": [\n")
-loadCSV('Estacionamiento.csv',current)
-current.write("]}")
+def toJSONfinal(zone,available):
+    return "{\"section\":\""+str(zone)+"\", \"capacity\":"+str(available)+"}"

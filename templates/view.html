@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block head %}
+  {{super()}}
+{% endblock %}
+{% block content %}
+  <div class="section">
+    <div class="container">
+      {% for item in data %}
+        {% if loop.cycle('odd', 'even') == 'odd' %}
+        <div class="row">
+        {% endif %}
+          <div class="col s12 m6">
+            <div class="card blue-grey darken-1">
+              <div class="card-content white-text">
+                <span class="card-title">{{ item.section }}</span>
+                <p>Capacity: {{ item.capacity }}</p>
+              </div>
+            </div>
+          </div>
+        {% if loop.cycle('odd', 'even') == 'even' %}
+        </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+{% endblock %}

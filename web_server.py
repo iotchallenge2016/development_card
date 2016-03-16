@@ -1,10 +1,21 @@
-from flask import Flask, url_for, request, jsonify, Response, render_template
-from bson.json_util import dumps
+from flask import Flask, url_for, request, jsonify, Response, render_template, redirect
 from invalid_request import InvalidRequest
 from flask.ext.pymongo import PyMongo
+from werkzeug import secure_filename
+from bson.json_util import dumps
+from loader import parse_csv
 import json
+import os
+
+UPLOAD_FOLDER = os.getcwd() + '/uploads'
+ALLOWED_EXTENSIONS = set(['csv'])
+
 app = Flask('parking-lot', static_url_path='/static')
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 mongo = PyMongo(app)
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
 
 @app.errorhandler(InvalidRequest)
 def handle_invalid_usage(error):
@@ -20,17 +31,32 @@ def root():
 def about():
 	return render_template('about.html')
 
+@app.route('/view', methods=['GET'])
+def view_parking_lot():
+	data = []
+	for result in mongo.db.parking.find():
+		data.append(result)
+	return render_template('view.html', data=data)
+
+@app.route('/file', methods=['POST'])
+def upload_file():
+    if request.method == 'POST':
+        file = request.files['file']
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            mongo.db.parking.insert_many(json.loads(parse_csv(os.path.join(app.config['UPLOAD_FOLDER'], filename))))
+	return redirect(url_for('view_parking_lot'))
+
 @app.route('/sections', methods = ['GET'])
 def api_sections():
 	if request.method == 'GET':
-		resultSet = mongo.db.parking.find()
 		data = []
-		for result in resultSet:
+		for result in mongo.db.parking.find():
 			data.append(result)
 		return Response(dumps(data), mimetype='application/json')
 	else:
 		raise InvalidUsage('Unsupported Method', 501)
-
 
 @app.route('/sections/<sectionId>', methods = ['GET'])
 def api_section(sectionId):
@@ -39,20 +65,18 @@ def api_section(sectionId):
 	else:
 		raise InvalidUsage('Unsupported Method', 501)
 
-@app.route('/sections/<sectionId>/free/<quantity>')
+@app.route('/sections/<sectionId>/free/<int:quantity>')
 def api_section_free(sectionId, quantity, methods = ['GET']):
 	if request.method == 'GET':
-		quantity = int(quantity)
 		data = mongo.db.parking.find({'section': sectionId})[0]
 		mongo.db.parking.update_one({'section' : sectionId}, {'$set' : {'capacity' : int(data['capacity'] + quantity)}})
 		return Response(dumps(mongo.db.parking.find({'section': sectionId})[0]), mimetype='application/json')
 	else:
 		raise InvalidUsage('Unsupported Method', 501)
 
-@app.route('/sections/<sectionId>/reserve/<quantity>')
+@app.route('/sections/<sectionId>/reserve/<int:quantity>')
 def api_section_reserve(sectionId, quantity, methods = ['GET']):
 	if request.method == 'GET':
-		quantity = int(quantity)
 		data = mongo.db.parking.find({'section': sectionId})[0]
 		if (data['capacity'] > 0):
 			mongo.db.parking.update_one({'section' : sectionId}, {'$set' : {'capacity' : int(data['capacity'] - quantity)}})
