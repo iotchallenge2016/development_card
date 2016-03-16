@@ -30,10 +30,6 @@ def root():
 @app.route('/about')
 def about():
 	return render_template('about.html')
- 
-@app.route('/visualize')
-def visualize():
-	return render_template('visualizeMode.html')
 
 @app.route('/view', methods=['GET'])
 def view_parking_lot():
