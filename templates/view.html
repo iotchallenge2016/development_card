@@ -4,45 +4,18 @@
   <div class="row">
     <div class="col s4">
       <div class="container">
-        {% for item in data %}
-        {% set percentage = (((item.max - item.capacity) / item.max) * 100)|round|int %}
-          <div class="col s12">
-            {% set color = "blue-grey lighten-1" %}
-            {% if 100 - percentage > 90 %}
-            {% set color = "red darken-4" %}
-            {% elif 100 - percentage > 85 %}
-            {% set color = "red darken-2" %}
-            {% elif 100 - percentage > 70 %}
-            {% set color = "red" %}
-            {% elif 100 - percentage > 60 %}
-            {% set color = "red lighten-1" %}
-            {% elif 100 - percentage > 50 %}
-            {% set color = "purple darken-1" %}
-            {% elif 100 - percentage > 40 %}
-            {% set color = "blue-grey darken-1" %}
-            {% endif %}
-            <div class="card {{ color }}">
-              <div class="card-content white-text">
-                <span class="card-title">{{ item.section|replace("P_", "Estacionamiento ") }}</span>
-                <p>Lugares Disponibles: {{ item.max - item.capacity }}</p>
-                <p>Ocupación: {{ 100 - percentage }}% </p>
-              </div>
-            </div>
-          </div>
-        {% endfor %}
+        <div id="cards-container">
+        </div>
       </div>
     </div>
-
-  <div class="col s8" >
-    <div >
-     <canvas id="respondCanvas" width = "800px" height = "800px"> </canvas>
+    <div class="col s8">
+      <canvas id="respondCanvas" width = "800px" height = "800px"></canvas>
     </div>
-  </div>
   </div>
 </div>
 {% endblock %}
-
 {% block javascriptIncludes %}
   <script type="text/javascript" src="http://fabricjs.com/build/files/text,gestures,easing,parser,freedrawing,interaction,serialization,image_filters,gradient,pattern,shadow,node.min.js"></script>
+  <script src="{{ url_for('static', filename='js/loadCards.js') }}"></script>
   <script src="{{ url_for('static', filename='js/canvasVisual.js') }}"></script>
 {% endblock %}
