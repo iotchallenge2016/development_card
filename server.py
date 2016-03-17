@@ -64,8 +64,13 @@ def upload_file():
 	return redirect(url_for('view_parking_lot'))
 
 @app.route('/graph')
-def api_show_graph():
+def api_print_graph():
 	return get_graph().html_text()
+
+@app.route('/graph/<dstId>')
+def api_graph_closest_parking_zone(dstId):
+	g = get_graph()
+	return Response(dumps(g.find_section(g.get_closest_parking_section(dstId))), mimetype="application/json")
 
 @app.route('/sections', methods = ['GET'])
 def api_sections():

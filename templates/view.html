@@ -23,7 +23,7 @@
             {% endif %}
             <div class="card {{ color }}">
               <div class="card-content white-text">
-                <span class="card-title">{{ item.section }}</span>
+                <span class="card-title">{{ item.section|replace("P_", "Estacionamiento ") }}</span>
                 <p>Lugares Disponibles: {{ item.max - item.capacity }}</p>
                 <p>Ocupación: {{ 100 - percentage }}% </p>
               </div>
