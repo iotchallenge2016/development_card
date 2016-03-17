@@ -15,7 +15,7 @@ def parse_csv(csvURL):
             if diff != int(elements[zone]):
                 ocpd = sum(values)
                 free = total - ocpd
-                json = json + toJSON(diff,free)
+                json = json + toJSON(diff,free, total)
                 values = []
                 total = 0
                 diff = int(elements[zone])
@@ -25,10 +25,10 @@ def parse_csv(csvURL):
     # Calculates the occupied and free spaces in the last zone
     ocpd = sum(values)
     free = total - ocpd
-    return json + toJSONfinal(diff,free) + "]"
+    return json + toJSONfinal(diff,free, total) + "]"
 
-def toJSON(zone,available):
-    return "{\"section\":\""+str(zone)+"\", \"capacity\":"+str(available)+"},"
+def toJSON(zone,available,total):
+    return "{\"section\":\""+str(zone)+"\", \"capacity\":"+str(available)+",\"max\":"+str(total)+"},"
 
-def toJSONfinal(zone,available):
-    return "{\"section\":\""+str(zone)+"\", \"capacity\":"+str(available)+"}"
+def toJSONfinal(zone,available,total):
+    return "{\"section\":\""+str(zone)+"\", \"capacity\":"+str(available)+",\"max\":"+str(total)+"}"
