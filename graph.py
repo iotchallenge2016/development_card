@@ -1,5 +1,4 @@
 import networkx as nx
-import random
 
 class Graph:
 	g = None
@@ -73,6 +72,9 @@ class Graph:
 
 	def html_text(self):
 		return self.text().replace('\n','<br>')
+
+	def to_dict(self):
+		return {'nodes': self.g.nodes(data=True), 'edges': self.g.edges(data=True)}
 
 	def display(self):
 		print self.text()

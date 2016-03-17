@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+
+{% for doc in autodoc %}
+{% if loop.cycle('odd', 'even') == 'odd'%}
+<div class="row">
+{% endif %}
+  <div class="col s12 m5">
+    <div class="card-panel green darken-1">
+      <span class="white-text">
+      	<h5>{{doc.rule}}</h5>
+        <blockquote>{% autoescape false %}{{doc.docstring|urlize|nl2br}}{% endautoescape %}</blockquote>
+      	<p>Methods: 
+      	{% for method in doc.methods %}
+      	{{ method }}{% if not loop.last%}, {% endif %}
+      	{% endfor %}
+      	</p>
+      	<p>Arguments: 
+      	{% for arg in doc.args %}
+      	{{ arg }}{% if not loop.last%}, {% endif %}
+      	{% endfor %}
+      	</p>
+      </span>
+    </div>
+  </div>
+{% if loop.cycle('odd', 'even') == 'even' or loop.last %}
+</div>
+{% endif %}
+{% endfor %}
+{% endblock %}
