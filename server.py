@@ -128,7 +128,7 @@ def api_section_free(sectionId, quantity, methods = ['GET']):
 	"""Frees the *quantity of spaces defined from the specified *sectionId, returns the updated section a JSON representation"""
 	if request.method == 'GET':
 		data = mongo.db[COLLECTION].find({'section': sectionId})[0]
-		if data['capacity'] + quantity < data['max']:
+		if data['capacity'] + quantity <= data['max']:
 			mongo.db[COLLECTION].update_one({'section' : sectionId}, {'$inc' : {'capacity' : quantity}})
 		return Response(dumps(mongo.db[COLLECTION].find({'section': sectionId})[0]), mimetype='application/json')
 	else:
