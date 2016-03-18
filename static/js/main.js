@@ -44,7 +44,7 @@ function getColorClass(percentage) {
 	} else if(percentage > 60) {
 		return ["amber darken-3", "#ff8f00"];
 	} else if(percentage > 40) {
-		return ["yellow accent-2", "#ffff00"];
+		return ["amber accent-2", "#ffd740"];
 	} else if(percentage > 20) {
 		return ["lime accent-4", "#aeea00"];
 	} else {
@@ -79,6 +79,11 @@ function loadCards() {
 	setTimeout(loadCards, 2000);
 }
 
-
+function saveGraph() {
+  $.getJSON('/graph/save', function(data) {
+    console.log('SavedGraph!');
+    console.log(data);
+  })
+}
 
 loadCards();

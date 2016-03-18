@@ -7,13 +7,16 @@ from time import gmtime, strftime
 from bson.json_util import dumps
 from loader import parse_csv
 from graph import Graph
+import openalpr_api
 import pymongo
 import json
 import os
 
+
 UPLOAD_FOLDER = os.getcwd() + '/uploads'
 COLLECTION = 'itesm'
-ALLOWED_EXTENSIONS = set(['csv'])
+graphDB = 'graphDB'
+ALLOWED_EXTENSIONS = set(['csv','jpg', 'png'])
 
 app = Flask('parking-lot', static_url_path='/static')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -94,15 +97,22 @@ def api_graph_closest_parking_section_for(dstId):
 	return Response(dumps(g.find_section(g.get_closest_parking_section(dstId))), mimetype='application/json')
 
 @app.route('/graph/save')
-@app.route('/graph/save/<collection>')
 @auto.doc(groups=['admin'])
-def api_graph_save(collection='graphDB'):
+def api_graph_save():
 	"""Saves the graph into the specified collection"""
 	g = get_graph()
 	to_insert = g.to_dict()
 	to_insert['createdAt'] = strftime("%Y-%m-%d %H:%M:%S", gmtime())
-	mongo.db[collection].insert_one(to_insert)
+	mongo.db[graphDB].insert_one(to_insert)
 	return Response(dumps(to_insert), mimetype='application/json')
+
+@app.route('/graphs')
+def api_show_graphs():
+	"""Shows the saved graphs"""
+	data = []
+	for graph in mongo.db[graphDB].find():
+		data.append(graph)
+	return Response(dumps(data), mimetype='application/json')
 
 @app.route('/sections', methods = ['GET'])
 @auto.doc(groups=['admin'])
@@ -140,7 +150,7 @@ def api_section_reserve(sectionId, quantity, methods = ['GET']):
 	"""Reserves the *quantity of spaces defined from the specified *sectionId, returns the updated section a JSON representation"""
 	if request.method == 'GET':
 		data = mongo.db[COLLECTION].find({'section': sectionId})[0]
-		if (data['capacity'] > 0 and data['capacity'] + quantity < data['max']):
+		if (data['capacity'] >= 0 and data['capacity'] - quantity <= data['max']):
 			mongo.db[COLLECTION].update_one({'section' : sectionId}, {'$inc' : {'capacity' :  -quantity}})
 		return Response(dumps(mongo.db[COLLECTION].find({'section': sectionId})[0]), mimetype='application/json')
 	else:
@@ -180,6 +190,36 @@ def api_places():
 def documentation():
 	"""Returns the documentation"""
 	return auto.html(groups=['admin', 'users'], template="doc.html")
+
+@app.route('/car_info')
+@auto.doc(groups=['users','admin'])
+def get_car_info():
+	"""Returns the information of the car image"""
+
+	if request.method == 'POST':
+		file = request.files['file']
+		if file and allowed_file(file.filename):
+			filename = secure_filename(file.filename)
+			file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+			apiclient = openalpr_api.DefaultApi()
+			plates_image = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+			response = apiclient.recognize_post("sk_DEMODEMODEMODEMODEMODEMO", "plate,color,make,makemodel", image=plates_image, country="mx")
+
+			car_info = {}
+			car_info["plates"] = []
+			for plate_obj in response.plate.results:
+				car_info["plates"].append({"plate" : plate_obj.plate, "confidence" : plate_obj.confidence})
+
+			car_info["color"] = {"color" : response.color[0].value, "confidence" : response.color[0].confidence}
+			car_info["make"] = {"make" : response.make[0].value, "confidence" : response.make[0].confidence}
+			car_info["make-model"] = {"make-model" : response.makemodel[0].value, "confidence" : response.makemodel[0].confidence}
+
+			return Response(json.dumps(car_info), mimetype='application/json')
+
+		else:
+			raise InvalidUsage('Unsupported Method', 501)
+	else:
+		raise InvalidUsage('Unsupported Method', 501)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True)
