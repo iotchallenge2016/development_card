@@ -3,9 +3,11 @@ from invalid_request import InvalidRequest
 from flask.ext.pymongo import PyMongo
 from flask.ext.autodoc import Autodoc
 from werkzeug import secure_filename
+from time import gmtime, strftime
 from bson.json_util import dumps
 from loader import parse_csv
 from graph import Graph
+import pymongo
 import json
 import os
 
@@ -23,7 +25,7 @@ def allowed_file(filename):
 
 def get_sections():
 	data = []
-	for result in mongo.db[COLLECTION].find({'section' : {'$exists': True}}):
+	for result in mongo.db[COLLECTION].find({'section' : {'$exists': True}}).sort('capacity', pymongo.DESCENDING):
 		data.append(result)
 	return data
 
@@ -84,12 +86,23 @@ def api_graph_text():
 	"""Returns the representation of the graph as text"""
 	return get_graph().html_text()
 
-@app.route('/graph/<dstId>')
+@app.route('/graph/closest_parking_section_for/<dstId>')
 @auto.doc(groups=['admin'])
-def api_graph_closest_parking_zone(dstId):
+def api_graph_closest_parking_section_for(dstId):
 	"""Returns the closest parking area to the destionation zone"""
 	g = get_graph()
-	return Response(dumps(g.find_section(g.get_closest_parking_section(dstId))), mimetype="application/json")
+	return Response(dumps(g.find_section(g.get_closest_parking_section(dstId))), mimetype='application/json')
+
+@app.route('/graph/save')
+@app.route('/graph/save/<collection>')
+@auto.doc(groups=['admin'])
+def api_graph_save(collection='graphDB'):
+	"""Saves the graph into the specified collection"""
+	g = get_graph()
+	to_insert = g.to_dict()
+	to_insert['createdAt'] = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+	mongo.db[collection].insert_one(to_insert)
+	return Response(dumps(to_insert), mimetype='application/json')
 
 @app.route('/sections', methods = ['GET'])
 @auto.doc(groups=['admin'])
@@ -127,7 +140,7 @@ def api_section_reserve(sectionId, quantity, methods = ['GET']):
 	"""Reserves the *quantity of spaces defined from the specified *sectionId, returns the updated section a JSON representation"""
 	if request.method == 'GET':
 		data = mongo.db[COLLECTION].find({'section': sectionId})[0]
-		if (data['capacity'] > 0):
+		if (data['capacity'] > 0 and data['capacity'] + quantity < data['max']):
 			mongo.db[COLLECTION].update_one({'section' : sectionId}, {'$inc' : {'capacity' :  -quantity}})
 		return Response(dumps(mongo.db[COLLECTION].find({'section': sectionId})[0]), mimetype='application/json')
 	else:
