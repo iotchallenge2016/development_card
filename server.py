@@ -86,7 +86,7 @@ def api_graph_text():
 	"""Returns the representation of the graph as text"""
 	return get_graph().html_text()
 
-@app.route('/graph/closest_parking_section_for/<dstId>')
+@app.route('/graph/<dstId>')
 @auto.doc(groups=['admin'])
 def api_graph_closest_parking_section_for(dstId):
 	"""Returns the closest parking area to the destionation zone"""
