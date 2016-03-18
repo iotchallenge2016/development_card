@@ -9,13 +9,16 @@
       </div>
     </div>
     <div class="col s8">
-      <canvas id="respondCanvas" width = "800px" height = "800px"></canvas>
+        <div id="map-container"> 
+          <div id="map" align="center"></div>
+       </div>
     </div>
   </div>
 </div>
 {% endblock %}
 {% block javascriptIncludes %}
-  <script type="text/javascript" src="http://fabricjs.com/build/files/text,gestures,easing,parser,freedrawing,interaction,serialization,image_filters,gradient,pattern,shadow,node.min.js"></script>
-  <script src="{{ url_for('static', filename='js/loadCards.js') }}"></script>
-  <script src="{{ url_for('static', filename='js/canvasVisual.js') }}"></script>
+    <script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBHtH54REtXuqXqMKKDHbJ-K-kzh3O8nIA&callback=initMap">
+    </script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 {% endblock %}

@@ -26,11 +26,22 @@
 
 .custom-footer {
 	margin-top: 0em !important;
+	z-index: 100 !important;
 }
 
-#mainCanvas{
-    display:block;
-    width:80%;
-    padding:50px 10%;
-    height:300px;
-} 
+.custom-navbar{
+	position: fixed;
+	z-index: 100 !important;
+}
+
+#map {
+	height: 100%;
+	width: 75%;
+}
+
+#map-container {
+	height:90vh; 
+	width: 75%; 
+	position: fixed;
+	z-index: -100;
+}
